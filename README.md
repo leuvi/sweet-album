@@ -1,5 +1,11 @@
 # sweet-album
 
+[![npm version](https://img.shields.io/npm/v/sweet-album.svg)](https://www.npmjs.com/package/sweet-album)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/sweet-album)](https://bundlephobia.com/package/sweet-album)
+[![types](https://img.shields.io/npm/types/sweet-album.svg)](https://www.npmjs.com/package/sweet-album)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/sweet-album?activeTab=dependencies)
+[![license](https://img.shields.io/npm/l/sweet-album.svg)](./LICENSE)
+
 A framework-agnostic web photo album for the browser — a single, continuous,
 day-grouped timeline with a justified layout, virtual scrolling and a
 full-screen viewer.
@@ -50,6 +56,42 @@ npm install sweet-album
 
 ```bash
 pnpm add sweet-album
+```
+
+```bash
+yarn add sweet-album
+```
+
+React and Vue are **optional peer dependencies** — install neither and the
+vanilla build still works. Nothing else is pulled in; the package has zero
+runtime dependencies.
+
+| Entry         | Import                  | Gzipped |
+| ------------- | ----------------------- | ------- |
+| Core          | `sweet-album`           | 17.4 kB |
+| Stylesheet    | `sweet-album/style.css` | 5.2 kB  |
+| React adapter | `sweet-album/react`     | 1.0 kB  |
+| Vue adapter   | `sweet-album/vue`       | 1.3 kB  |
+
+Those are the published files as-is. The bundle is shipped unminified so your
+bundler can tree-shake and minify it with everything else — which is why the
+badge above, measured after minification, reads smaller.
+
+Ships ESM and CJS side by side with TypeScript declarations for every entry.
+The stylesheet is not injected for you — import it once, anywhere:
+
+```js
+import 'sweet-album/style.css'
+```
+
+### Without a build step
+
+```html
+<link rel="stylesheet" href="https://esm.sh/sweet-album/style.css" />
+<script type="module">
+  import { SweetAlbum } from 'https://esm.sh/sweet-album'
+  new SweetAlbum('#album', { data: photos })
+</script>
 ```
 
 ## Quick start

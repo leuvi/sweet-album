@@ -1,5 +1,11 @@
 # sweet-album
 
+[![npm version](https://img.shields.io/npm/v/sweet-album.svg)](https://www.npmjs.com/package/sweet-album)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/sweet-album)](https://bundlephobia.com/package/sweet-album)
+[![types](https://img.shields.io/npm/types/sweet-album.svg)](https://www.npmjs.com/package/sweet-album)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/sweet-album?activeTab=dependencies)
+[![license](https://img.shields.io/npm/l/sweet-album.svg)](./LICENSE)
+
 一个与框架无关的 Web 相册组件：单一、连续、按天分组的照片时间流，自适应正列布局、
 虚拟滚动、全屏预览。
 
@@ -47,6 +53,40 @@ npm install sweet-album
 
 ```bash
 pnpm add sweet-album
+```
+
+```bash
+yarn add sweet-album
+```
+
+React 和 Vue 是**可选的 peer 依赖** —— 两个都不装，原生 JS 用法照常可用。
+除此之外不引入任何东西，运行时依赖为零。
+
+| 入口       | 引入路径                | gzip 后 |
+| ---------- | ----------------------- | ------- |
+| 核心       | `sweet-album`           | 17.4 kB |
+| 样式       | `sweet-album/style.css` | 5.2 kB  |
+| React 适配 | `sweet-album/react`     | 1.0 kB  |
+| Vue 适配   | `sweet-album/vue`       | 1.3 kB  |
+
+以上是发布文件的原始体积。产物**刻意不做压缩**，交给你的打包器和业务代码一起
+tree-shake 和压缩 —— 所以上方那个 badge（压缩后测量）显示的数字更小。
+
+同时提供 ESM 和 CJS，每个入口都带 TypeScript 类型声明。样式**不会自动注入**，
+需要你自己引一次（放在哪里都可以）：
+
+```js
+import 'sweet-album/style.css'
+```
+
+### 免构建用法
+
+```html
+<link rel="stylesheet" href="https://esm.sh/sweet-album/style.css" />
+<script type="module">
+  import { SweetAlbum } from 'https://esm.sh/sweet-album'
+  new SweetAlbum('#album', { data: photos })
+</script>
 ```
 
 ## 快速开始
