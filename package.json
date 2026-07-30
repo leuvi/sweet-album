@@ -1,6 +1,6 @@
 {
   "name": "sweet-album",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "A framework-agnostic web photo album: justified layout, virtual scrolling, year/month/day drill-down, selection, favorites and a full-screen viewer. Works with vanilla JS, React and Vue.",
   "keywords": [
@@ -71,7 +71,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build",
-    "release": "pnpm run build && npm publish --access public"
+    "release": "pnpm run build && npm publish --access public",
+    "demo:build": "vite build --mode demo && node scripts/gen-demo-manifest.mjs --base https://album.cuyo.ai --out demo-online/manifest.json"
   },
   "peerDependencies": {
     "react": ">=17",

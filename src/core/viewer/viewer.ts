@@ -50,6 +50,8 @@ export class Viewer {
   private dragged = false
   private img!: HTMLImageElement
   private status!: HTMLElement
+  private dots!: HTMLElement
+  private statusText!: HTMLElement
   private counter!: HTMLElement
   private prevBtn: HTMLButtonElement | null = null
   private nextBtn: HTMLButtonElement | null = null
@@ -140,6 +142,11 @@ export class Viewer {
     this.img.addEventListener('error', this.onImageError)
 
     this.status = el('div', 'sp-viewer__status', this.stage)
+    // Announced to screen readers; sighted users get the dots below.
+    this.status.setAttribute('role', 'status')
+    this.dots = el('div', 'sp-viewer__dots', this.status)
+    for (let i = 0; i < 3; i++) el('span', '', this.dots)
+    this.statusText = el('span', 'sp-viewer__status-text', this.status)
 
     const closeBtn = el('button', 'sp-viewer__close', root)
     closeBtn.type = 'button'
@@ -214,7 +221,8 @@ export class Viewer {
 
     this.root?.classList.remove('is-error')
     this.root?.classList.add('is-loading')
-    this.status.textContent = this.host.messages().loading
+    this.status.setAttribute('aria-label', this.host.messages().loading)
+    this.statusText.textContent = ''
 
     this.img.alt = photo.alt
     this.img.src = photo.url
@@ -249,7 +257,8 @@ export class Viewer {
   private onImageError = (): void => {
     this.root?.classList.remove('is-loading')
     this.root?.classList.add('is-error')
-    this.status.textContent = this.host.messages().loadFailed
+    this.status.removeAttribute('aria-label')
+    this.statusText.textContent = this.host.messages().loadFailed
   }
 
   private preload(index: number): void {

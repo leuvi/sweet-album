@@ -20,7 +20,18 @@ import sharp from 'sharp'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const photosDir = resolve(here, '../demo/photos')
-const outFile = resolve(here, '../demo/manifest.json')
+
+/** `--out <path>` writes elsewhere; defaults to the dev playground. */
+const outArg = process.argv.indexOf('--out')
+const outFile =
+  outArg !== -1 ? resolve(process.cwd(), process.argv[outArg + 1]) : resolve(here, '../demo/manifest.json')
+
+/**
+ * `--base <origin>` makes image URLs absolute, for the online demo where the
+ * photos are served from a separate host. Empty means site-relative.
+ */
+const baseArg = process.argv.indexOf('--base')
+const BASE = baseArg !== -1 ? process.argv[baseArg + 1].replace(/\/+$/, '') : ''
 
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'])
 /** Long edge of a generated thumbnail, px — covers 2x on the largest rows. */
@@ -114,7 +125,7 @@ for (const year of listDirs(photosDir).sort()) {
       const hour = (seed >>> 8) % 24
       const minute = (seed >>> 13) % 60
 
-      const base = `/photos/${year}/${month}`
+      const base = `${BASE}/photos/${year}/${month}`
       const p2 = (n) => String(n).padStart(2, '0')
       photos.push({
         id: `${year}${month}-${file}`,

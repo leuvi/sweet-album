@@ -749,9 +749,52 @@ button.sp-tile__badge {
 
 .sp-viewer__status {
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--sp-fg-dim);
   font-size: 13px;
   pointer-events: none;
+}
+
+/* Three dots bouncing out of phase — shown while the image loads. */
+.sp-viewer__dots {
+  display: flex;
+  gap: 7px;
+}
+
+.sp-viewer:not(.is-loading) .sp-viewer__dots,
+.sp-viewer.is-error .sp-viewer__dots {
+  display: none;
+}
+
+.sp-viewer__dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sp-fg-dim);
+  animation: sp-dot-bounce 1.05s ease-in-out infinite;
+}
+
+.sp-viewer__dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.sp-viewer__dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes sp-dot-bounce {
+  0%,
+  70%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
 }
 
 .sp-viewer:not(.is-loading):not(.is-error) .sp-viewer__status {

@@ -6,6 +6,11 @@
 一个包同时服务 **原生 JS**、**React** 和 **Vue 3**。库本身不做任何请求，也不假设后端
 形态 —— 你把照片给它，它负责渲染。
 
+**[▶ 在线演示](https://album.sweetui.com)** · 10 年跨度共 214 张照片 —
+[原生 JS](https://album.sweetui.com/) ·
+[React](https://album.sweetui.com/react.html) ·
+[Vue](https://album.sweetui.com/vue.html)
+
 [English](./README.md) | 简体中文
 
 ---

@@ -7,6 +7,11 @@ full-screen viewer.
 Works with **vanilla JS**, **React** and **Vue 3** from one package. No data
 fetching, no backend assumptions: you hand it photos, it renders them.
 
+**[▶ Live demo](https://album.sweetui.com)** · 214 photos across 10 years —
+[vanilla](https://album.sweetui.com/) ·
+[React](https://album.sweetui.com/react.html) ·
+[Vue](https://album.sweetui.com/vue.html)
+
 English | [简体中文](./README.zh-CN.md)
 
 ---
