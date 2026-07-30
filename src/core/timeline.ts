@@ -3,6 +3,8 @@ import { clamp, el, on } from './utils/dom'
 
 /** Minimum vertical distance between two rendered year labels, px. */
 const LABEL_MIN_GAP = 22
+/** Frames to keep re-measuring an unmeasurable rail before giving up. */
+const MAX_REMEASURE_FRAMES = 90
 
 export interface Tick {
   /** 0-1 position along the rail. */
@@ -34,12 +36,9 @@ export function layoutTicks(
 ): PlacedTick[] {
   const n = ticks.length
   if (n === 0) return []
-
-  // Before layout: spread evenly so they read as a list rather than a pile.
-  // The observer corrects this as soon as a real height exists.
-  if (height <= 0) {
-    return ticks.map((t, i) => ({ ...t, y: i * minGap }))
-  }
+  // Callers render by percentage when the rail has no measurable height; this
+  // is only a guard so the function stays total.
+  if (height <= 0) return ticks.map((t) => ({ ...t, y: 0 }))
 
   // Shrink the gap if the labels cannot all fit at the preferred spacing;
   // overlapping slightly beats hiding a year.
@@ -87,9 +86,11 @@ export class Timeline {
   private layout: LayoutResult | null = null
   private disposers: (() => void)[] = []
   private dragging = false
-  /** Rail height the current labels were thinned against. */
+  /** Rail height the current labels were laid out against. */
   private renderedAt = -1
   private observer: ResizeObserver | null = null
+  private remeasureHandle = 0
+  private remeasureTries = 0
 
   constructor(
     parent: HTMLElement,
@@ -130,6 +131,8 @@ export class Timeline {
     this.disposers = []
     this.observer?.disconnect()
     this.observer = null
+    if (this.remeasureHandle) cancelAnimationFrame(this.remeasureHandle)
+    this.remeasureHandle = 0
     this.root.remove()
   }
 
@@ -166,15 +169,52 @@ export class Timeline {
     if (this.ticks.length === 0) return
 
     // Always draw, whatever the height. Waiting for a "real" height means
-    // drawing nothing at all if the observer never reports one.
+    // drawing nothing at all if the re-measure never lands.
     const height = this.rail.clientHeight || this.root.clientHeight
     this.renderedAt = height
 
-    for (const tick of layoutTicks(this.ticks, height)) {
+    const draw = (label: string, top: string): void => {
       const node = el('span', 'sp-timeline__tick', this.rail)
-      node.style.top = `${Math.round(tick.y)}px`
-      node.textContent = tick.label
+      node.style.top = top
+      node.textContent = label
     }
+
+    // Nothing measurable yet — the stylesheet is still in flight, or an
+    // ancestor is display:none. Percentages need no height at all, so every
+    // label lands on its true position the instant layout happens. Overlap in
+    // the crowded spots is possible until the re-measure below corrects it,
+    // which is a far better failure mode than a pile at the top.
+    if (height <= 0) {
+      for (const tick of this.ticks) draw(tick.label, `${tick.at * 100}%`)
+      this.scheduleRemeasure()
+      return
+    }
+
+    this.remeasureTries = 0
+    for (const tick of layoutTicks(this.ticks, height)) {
+      draw(tick.label, `${Math.round(tick.y)}px`)
+    }
+  }
+
+  /**
+   * Re-render once the rail can actually be measured.
+   *
+   * The ResizeObserver normally catches this, but it is one asynchronous
+   * notification and correctness should not hinge on it arriving — it does not
+   * fire for elements with no box, and a missed one used to leave the labels
+   * stuck in their unmeasured layout. Polling a bounded number of frames costs
+   * nothing and does not depend on anything being delivered.
+   */
+  private scheduleRemeasure(): void {
+    if (this.remeasureHandle || this.remeasureTries >= MAX_REMEASURE_FRAMES) return
+
+    this.remeasureHandle = requestAnimationFrame(() => {
+      this.remeasureHandle = 0
+      this.remeasureTries++
+      const height = this.rail.clientHeight || this.root.clientHeight
+      if (height !== this.renderedAt) this.render()
+      else this.scheduleRemeasure()
+    })
   }
 
   /** Re-run label thinning after the rail's pixel height changes. */

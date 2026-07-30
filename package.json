@@ -1,6 +1,6 @@
 {
   "name": "sweet-album",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "description": "A framework-agnostic web photo album: justified layout, virtual scrolling, year/month/day drill-down, selection, favorites and a full-screen viewer. Works with vanilla JS, React and Vue.",
   "keywords": [

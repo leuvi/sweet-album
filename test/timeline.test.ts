@@ -23,7 +23,7 @@ const minSpacing = (placed: { y: number }[]) =>
 describe('layoutTicks', () => {
   /** The requirement: a year with photos is always reachable on the rail. */
   it('never drops a year, however cramped', () => {
-    for (const height of [0, 40, 120, 300, 593, 1200, 4000]) {
+    for (const height of [40, 120, 300, 593, 1200, 4000]) {
       expect(labelsOf(layoutTicks(years, height))).toEqual(labelsOf(years))
     }
   })
@@ -66,14 +66,12 @@ describe('layoutTicks', () => {
   })
 
   /**
-   * A zero height means the rail has not been laid out yet. Rendering must
-   * still produce every label, so that a later re-render at the true height
-   * only moves labels — it can never make a year appear or disappear.
+   * The renderer positions by percentage when the rail cannot be measured, so
+   * this path is only a guard. It must still be total and lose nothing.
    */
-  it('still returns every label before the rail has a height', () => {
-    const placed = layoutTicks(years, 0)
-    expect(labelsOf(placed)).toEqual(labelsOf(years))
-    expect(minSpacing(placed)).toBeGreaterThan(0)
+  it('stays total when handed an unmeasurable height', () => {
+    expect(labelsOf(layoutTicks(years, 0))).toEqual(labelsOf(years))
+    expect(labelsOf(layoutTicks(years, -5))).toEqual(labelsOf(years))
   })
 
   it('handles a single tick and an empty list', () => {
