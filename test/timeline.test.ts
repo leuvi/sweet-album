@@ -35,9 +35,12 @@ describe('thinTicks', () => {
   })
 
   /**
-   * The regression: a rail with no height yet (stylesheet still loading,
-   * display:none ancestor) put every tick at pixel 0, so thinning kept only
+   * A rail with no height yet put every tick at pixel 0, so thinning kept only
    * the first and the timeline showed a lone "2026".
+   *
+   * The renderer now waits for a real height instead of calling this, so all
+   * this covers is the fallback for environments with no ResizeObserver —
+   * there, too many labels beats one.
    */
   it('returns every tick when the rail has no height yet', () => {
     expect(thinTicks(years, 0)).toHaveLength(years.length)

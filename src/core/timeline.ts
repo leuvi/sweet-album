@@ -127,6 +127,16 @@ export class Timeline {
     if (this.ticks.length === 0) return
 
     const height = this.rail.clientHeight || this.root.clientHeight
+
+    // Not laid out yet. Draw nothing and wait for the observer: rendering the
+    // full set now means visibly retracting the crowded ones a moment later,
+    // so a year would flicker in and out depending on how fast the stylesheet
+    // landed. Without an observer to come back, fall through and draw them.
+    if (height <= 0 && this.observer) {
+      this.renderedAt = -1
+      return
+    }
+
     this.renderedAt = height
 
     for (const tick of thinTicks(this.ticks, height)) {
