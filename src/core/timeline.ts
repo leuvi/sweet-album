@@ -2,7 +2,7 @@ import type { LayoutResult, Messages } from './types'
 import { clamp, el, on } from './utils/dom'
 
 /** Minimum vertical distance between two rendered year labels, px. */
-const LABEL_MIN_GAP = 24
+const LABEL_MIN_GAP = 22
 
 export interface Tick {
   /** 0-1 position along the rail. */
@@ -10,26 +10,65 @@ export interface Tick {
   label: string
 }
 
-/**
- * Drop year labels that would collide at the given rail height.
- *
- * A height of zero means the rail has not been laid out yet — stylesheets in
- * flight, a display:none ancestor, a container mid-animation. Thinning against
- * it would put every tick at pixel 0 and keep only the first, so return them
- * all and let a later re-render thin properly.
- */
-export function thinTicks(ticks: Tick[], height: number, minGap = LABEL_MIN_GAP): Tick[] {
-  if (height <= 0) return ticks
+export interface PlacedTick extends Tick {
+  /** Final pixel offset down the rail, after collision resolution. */
+  y: number
+}
 
-  const kept: Tick[] = []
-  let lastPx = -Infinity
-  for (const tick of ticks) {
-    const px = tick.at * height
-    if (px - lastPx < minGap) continue
-    lastPx = px
-    kept.push(tick)
+/**
+ * Place every year label, nudging apart any that would overlap.
+ *
+ * Nothing is ever dropped: a year with photos in it is a year you must be able
+ * to jump to, so crowding is resolved by moving labels rather than removing
+ * them. A label can therefore sit slightly off its true position — the rail
+ * itself is still scrubbed by raw pointer position, so seeking stays exact.
+ *
+ * Because the set of labels never depends on the height, only their offsets
+ * do, a re-render at a corrected height can shift labels but can never make
+ * one appear or disappear.
+ */
+export function layoutTicks(
+  ticks: Tick[],
+  height: number,
+  minGap = LABEL_MIN_GAP,
+): PlacedTick[] {
+  const n = ticks.length
+  if (n === 0) return []
+
+  // Before layout: spread evenly so they read as a list rather than a pile.
+  // The observer corrects this as soon as a real height exists.
+  if (height <= 0) {
+    return ticks.map((t, i) => ({ ...t, y: i * minGap }))
   }
-  return kept
+
+  // Shrink the gap if the labels cannot all fit at the preferred spacing;
+  // overlapping slightly beats hiding a year.
+  const gap = n > 1 ? Math.min(minGap, height / (n - 1)) : minGap
+  const placed: PlacedTick[] = ticks.map((t) => ({ ...t, y: t.at * height }))
+
+  // Push down anything too close to the label above it.
+  for (let i = 1; i < n; i++) {
+    if (placed[i].y - placed[i - 1].y < gap) placed[i].y = placed[i - 1].y + gap
+  }
+
+  // That can run the last label off the bottom; pull the tail back up.
+  if (placed[n - 1].y > height) {
+    placed[n - 1].y = height
+    for (let i = n - 2; i >= 0; i--) {
+      if (placed[i + 1].y - placed[i].y < gap) placed[i].y = placed[i + 1].y - gap
+    }
+  }
+
+  // And that can push the first off the top. `gap` guarantees the total span
+  // fits, so a single forward pass settles it.
+  if (placed[0].y < 0) {
+    placed[0].y = 0
+    for (let i = 1; i < n; i++) {
+      if (placed[i].y - placed[i - 1].y < gap) placed[i].y = placed[i - 1].y + gap
+    }
+  }
+
+  return placed
 }
 
 /**
@@ -126,22 +165,14 @@ export class Timeline {
     this.rail.textContent = ''
     if (this.ticks.length === 0) return
 
+    // Always draw, whatever the height. Waiting for a "real" height means
+    // drawing nothing at all if the observer never reports one.
     const height = this.rail.clientHeight || this.root.clientHeight
-
-    // Not laid out yet. Draw nothing and wait for the observer: rendering the
-    // full set now means visibly retracting the crowded ones a moment later,
-    // so a year would flicker in and out depending on how fast the stylesheet
-    // landed. Without an observer to come back, fall through and draw them.
-    if (height <= 0 && this.observer) {
-      this.renderedAt = -1
-      return
-    }
-
     this.renderedAt = height
 
-    for (const tick of thinTicks(this.ticks, height)) {
+    for (const tick of layoutTicks(this.ticks, height)) {
       const node = el('span', 'sp-timeline__tick', this.rail)
-      node.style.top = `${tick.at * 100}%`
+      node.style.top = `${Math.round(tick.y)}px`
       node.textContent = tick.label
     }
   }
