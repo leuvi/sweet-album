@@ -1,0 +1,105 @@
+{
+  "name": "sweet-album",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A framework-agnostic web photo album: justified layout, virtual scrolling, year/month/day drill-down, selection, favorites and a full-screen viewer. Works with vanilla JS, React and Vue.",
+  "keywords": [
+    "photos",
+    "photo-album",
+    "gallery",
+    "lightbox",
+    "image-viewer",
+    "justified-layout",
+    "virtual-scroll",
+    "masonry",
+    "react",
+    "vue"
+  ],
+  "license": "MIT",
+  "author": "leuvi <528046@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leuvi/sweet-album.git"
+  },
+  "homepage": "https://github.com/leuvi/sweet-album#readme",
+  "bugs": {
+    "url": "https://github.com/leuvi/sweet-album/issues"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/core/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
+    },
+    "./style.css": {
+      "types": "./dist/sweet-album.css.d.ts",
+      "default": "./dist/sweet-album.css"
+    },
+    "./dist/sweet-album.css": "./dist/sweet-album.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node scripts/gen-demo-manifest.mjs && vite",
+    "demo:manifest": "node scripts/gen-demo-manifest.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/copy-css.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build",
+    "release": "pnpm run build && npm publish --access public"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17",
+    "vue": ">=3.2"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "image-size": "^1.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.35.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.3.0",
+    "vitest": "^2.1.5",
+    "vue": "^3.5.13"
+  }
+}

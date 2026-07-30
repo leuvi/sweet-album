@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+.idea/
+.vscode/
+.cache/
+
+# local-only material & publishing notes
+demo/
+CLAUDE.md
+.workbuddy
+.claude

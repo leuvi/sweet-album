@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "sweet-album": ["./src/core/index.ts"],
+      "sweet-album/react": ["./src/react/index.tsx"],
+      "sweet-album/vue": ["./src/vue/index.ts"],
+      "sweet-album/style.css": ["./src/styles/sweet-album.css"]
+    },
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src", "test", "demo/src"],
+  "exclude": ["node_modules", "dist"]
+}

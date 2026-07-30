@@ -1,0 +1,9 @@
+# `files` in package.json is the source of truth; this is a belt-and-braces guard
+demo/
+CLAUDE.md
+scripts/
+test/
+docs/
+src/
+vite.config.ts
+tsconfig.json

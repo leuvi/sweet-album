@@ -1,0 +1,42 @@
+import type { Messages } from '../types'
+
+const months = [
+  '1月',
+  '2月',
+  '3月',
+  '4月',
+  '5月',
+  '6月',
+  '7月',
+  '8月',
+  '9月',
+  '10月',
+  '11月',
+  '12月',
+]
+
+export const zhCN: Messages = {
+  photos: '张照片',
+  photo: '张照片',
+  selected: '已选择',
+  selectAll: '全选',
+  deselectAll: '取消全选',
+  clearSelection: '清空选择',
+  favorite: '加入收藏',
+  unfavorite: '取消收藏',
+  empty: '暂无照片',
+  loading: '加载中…',
+  loadFailed: '加载失败',
+  close: '关闭',
+  prev: '上一张',
+  next: '下一张',
+  zoomIn: '放大',
+  zoomOut: '缩小',
+  rotateLeft: '向左旋转',
+  rotateRight: '向右旋转',
+  actualSize: '原始尺寸',
+  fitToWindow: '适应窗口',
+  dateHeader: ({ year, month, day }) => `${year}年${month}月${day}日`,
+  months,
+  monthsShort: months,
+}

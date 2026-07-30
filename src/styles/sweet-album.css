@@ -1,0 +1,1067 @@
+/*!
+ * sweet-album — stylesheet
+ * Every colour is a CSS custom property, so theming means overriding variables
+ * rather than fighting selectors.
+ */
+
+.sweet-album,
+.sp-menu,
+.sp-viewer {
+  --sp-bg: #131313;
+  --sp-fg: #f2f2f2;
+  --sp-fg-dim: #a8a8a8;
+  --sp-surface: #1f1f1f;
+  --sp-surface-hover: #2c2c2c;
+  --sp-border: #333333;
+  --sp-accent: #4c8dff;
+  --sp-accent-fg: #ffffff;
+  --sp-danger: #ff5b5b;
+  --sp-heart: #ffffff;
+  --sp-tile-bg: #1c1c1c;
+  --sp-scrim: rgba(0, 0, 0, 0.55);
+  --sp-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --sp-radius: 6px;
+  --sp-radius-lg: 12px;
+  /* Opaque: a translucent backdrop lets page content bleed through and
+     compete with the viewer's own controls. */
+  --sp-overlay: #0b0b0b;
+  /* Scrim behind viewer buttons so they stay legible over any photo. */
+  --sp-btn-scrim: rgba(0, 0, 0, 0.45);
+  --sp-font:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.sweet-album[data-theme='light'],
+.sp-menu[data-theme='light'],
+.sp-viewer[data-theme='light'] {
+  --sp-bg: #ffffff;
+  --sp-fg: #1a1a1a;
+  --sp-fg-dim: #6b6b6b;
+  --sp-surface: #ffffff;
+  --sp-surface-hover: #f1f3f5;
+  --sp-border: #e2e4e8;
+  --sp-accent: #1a73e8;
+  --sp-accent-fg: #ffffff;
+  --sp-danger: #d93025;
+  --sp-heart: #ffffff;
+  --sp-tile-bg: #eceff1;
+  --sp-scrim: rgba(0, 0, 0, 0.35);
+  --sp-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  --sp-overlay: #f7f7f7;
+  --sp-btn-scrim: rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------------------------------------------------------ shell */
+
+/* Host element created by the React / Vue wrappers. */
+.sweet-album-host {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.sweet-album {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  background: var(--sp-bg);
+  color: var(--sp-fg);
+  font-family: var(--sp-font);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sweet-album *,
+.sweet-album *::before,
+.sweet-album *::after {
+  box-sizing: border-box;
+}
+
+.sweet-album [hidden] {
+  display: none !important;
+}
+
+/* Scroller + timeline. The timeline anchors here so it never covers the
+   top bar, which sits outside this box. */
+.sp-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sp-scroller {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 48px 32px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sp-border) transparent;
+  /* Reserve the gutter up front so the content box never changes width when
+     the scrollbar appears, which would otherwise force a relayout. */
+  scrollbar-gutter: stable;
+  outline: none;
+  /* Vertical only: horizontal drags belong to the browser, and scroll chaining
+     into the page behind an embedded album is never wanted. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sp-scroller::-webkit-scrollbar {
+  width: 8px;
+}
+.sp-scroller::-webkit-scrollbar-thumb {
+  background: var(--sp-border);
+  border-radius: 4px;
+}
+.sp-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sp-content {
+  position: relative;
+  width: 100%;
+}
+
+.sp-empty {
+  padding: 48px 0;
+  color: var(--sp-fg-dim);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- toolbar */
+
+.sp-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* Reserve the selected-state height up front. Batch buttons are taller than
+     the bare photo count, and letting the bar grow when a selection starts
+     shoves the whole grid down — the page appears to jump under the cursor. */
+  min-height: 53px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.sp-toolbar__count {
+  color: var(--sp-fg-dim);
+  font-size: 13px;
+}
+
+.sp-toolbar.is-selecting .sp-toolbar__count {
+  color: var(--sp-accent);
+  font-weight: 600;
+}
+
+.sp-toolbar__actions {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sp-toolbar__actions::-webkit-scrollbar {
+  display: none;
+}
+
+.sp-toolbar__btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--sp-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sp-fg);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sp-toolbar__btn:hover:not(:disabled) {
+  background: var(--sp-surface-hover);
+}
+
+.sp-toolbar__btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.sp-toolbar__btn.is-danger {
+  border-color: color-mix(in srgb, var(--sp-danger) 45%, transparent);
+  color: var(--sp-danger);
+}
+
+.sp-toolbar__icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sp-toolbar__btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ------------------------------------------------------------ day headers */
+
+.sp-day {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding-bottom: 6px;
+  will-change: transform;
+}
+
+.sp-day__label {
+  color: var(--sp-fg);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sp-day__check {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1.5px solid var(--sp-fg-dim);
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease;
+}
+
+.sp-day:hover .sp-day__check,
+.sp-day.is-all .sp-day__check,
+.sp-day.is-some .sp-day__check {
+  opacity: 1;
+}
+
+.sp-day.is-all .sp-day__check {
+  border-color: var(--sp-accent);
+  background: var(--sp-accent);
+  color: var(--sp-accent-fg);
+}
+
+.sp-day.is-some .sp-day__check {
+  border-color: var(--sp-accent);
+  background: transparent;
+  color: var(--sp-accent);
+}
+
+.sp-day.is-some .sp-day__check::after {
+  content: '';
+  width: 9px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sp-accent);
+}
+
+.sp-day.is-some .sp-day__check svg {
+  display: none;
+}
+
+.sp-day__check svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 3;
+}
+
+/* ------------------------------------------------------------------ tiles */
+
+.sp-tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--sp-radius);
+  background: var(--sp-tile-bg);
+  cursor: pointer;
+  contain: strict;
+  will-change: transform;
+}
+
+.sp-tile__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Stop iOS from hijacking a long press with its own image callout — we use
+     that gesture for the context menu. */
+  -webkit-touch-callout: none;
+  /* The tile's own box already matches the photo's aspect ratio, so `cover`
+     only ever absorbs sub-pixel rounding — it never distorts the image. */
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.sp-tile.is-loaded .sp-tile__img {
+  opacity: 1;
+}
+
+.sp-tile.is-error {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--sp-tile-bg),
+      var(--sp-tile-bg) 8px,
+      var(--sp-surface) 8px,
+      var(--sp-surface) 16px
+    );
+}
+
+.sp-tile__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, var(--sp-scrim) 0%, transparent 28%),
+    linear-gradient(to top, var(--sp-scrim) 0%, transparent 30%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.sp-tile:hover .sp-tile__scrim,
+.sp-tile.is-selected .sp-tile__scrim {
+  opacity: 1;
+}
+
+.sp-tile.is-selected {
+  outline: 3px solid var(--sp-accent);
+  outline-offset: -3px;
+}
+
+.sp-tile.is-selected .sp-tile__img {
+  transform: scale(0.94);
+  transition:
+    transform 0.14s ease,
+    opacity 0.22s ease;
+}
+
+/* selection circle — top LEFT, leaving both right corners for custom badges */
+.sp-tile__check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  color: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease;
+}
+
+.sp-tile:hover .sp-tile__check,
+.sp-tile.is-selected .sp-tile__check,
+.sp-tile__check:focus-visible {
+  opacity: 1;
+}
+
+.sp-tile.is-selected .sp-tile__check {
+  border-color: var(--sp-accent);
+  background: var(--sp-accent);
+  color: var(--sp-accent-fg);
+}
+
+.sp-tile__check svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 3;
+}
+
+/* favorite heart — bottom left. Only a *filled* (favorited) heart is
+   persistent; the hollow one is a hover affordance on pointer devices. */
+.sp-tile__fav {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.sp-tile:hover .sp-tile__fav,
+.sp-tile__fav.is-active,
+.sp-tile__fav:focus-visible {
+  opacity: 1;
+}
+
+.sp-tile__fav.is-active {
+  color: var(--sp-heart);
+}
+
+.sp-tile__fav:hover {
+  transform: scale(1.12);
+}
+
+.sp-tile__fav svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ------------------------------------------------------- consumer badges -- */
+
+.sp-tile__slot {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.sp-tile__slot--topLeft {
+  top: 6px;
+  left: 6px;
+}
+.sp-tile__slot--topRight {
+  top: 6px;
+  right: 6px;
+}
+.sp-tile__slot--bottomLeft {
+  bottom: 6px;
+  left: 6px;
+}
+.sp-tile__slot--bottomRight {
+  right: 6px;
+  bottom: 6px;
+}
+
+.sp-tile__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+  pointer-events: auto;
+}
+
+button.sp-tile__badge {
+  cursor: pointer;
+}
+
+.sp-tile__badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* --------------------------------------------------------------- timeline */
+
+.sp-timeline {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 44px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+/* One continuous line; year labels are punched through it below. The vertical
+   insets match the rail so the first and last labels are never clipped. */
+.sp-timeline__line {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 50%;
+  width: 1px;
+  background: var(--sp-border);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.sp-timeline__rail {
+  position: absolute;
+  inset: 14px 0;
+  pointer-events: none;
+}
+
+.sp-timeline__tick {
+  position: absolute;
+  left: 50%;
+  padding: 2px 4px;
+  transform: translate(-50%, -50%);
+  background: var(--sp-bg);
+  color: var(--sp-fg-dim);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.7;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+  pointer-events: none;
+}
+
+.sp-timeline:hover .sp-timeline__tick,
+.sp-timeline.is-dragging .sp-timeline__tick {
+  color: var(--sp-fg);
+  opacity: 1;
+}
+
+.sp-timeline__thumb {
+  position: absolute;
+  left: 50%;
+  width: 26px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--sp-accent);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.sp-timeline:hover .sp-timeline__thumb,
+.sp-timeline.is-dragging .sp-timeline__thumb {
+  opacity: 1;
+}
+
+.sp-timeline__bubble {
+  position: absolute;
+  right: 100%;
+  z-index: 2;
+  margin-right: 6px;
+  padding: 4px 10px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--sp-accent);
+  color: var(--sp-accent-fg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--sp-shadow);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------- context menu */
+
+.sp-menu {
+  position: fixed;
+  z-index: 2147483000;
+  min-width: 176px;
+  max-width: 320px;
+  padding: 6px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-lg);
+  background: var(--sp-surface);
+  color: var(--sp-fg);
+  font-family: var(--sp-font);
+  font-size: 13px;
+  box-shadow: var(--sp-shadow);
+}
+
+.sp-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--sp-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sp-menu__item:hover:not(:disabled) {
+  background: var(--sp-surface-hover);
+}
+
+.sp-menu__item:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.sp-menu__item.is-danger {
+  color: var(--sp-danger);
+}
+
+.sp-menu__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.sp-menu__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sp-menu__icon:empty {
+  display: none;
+}
+
+.sp-menu__label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-menu__arrow {
+  color: var(--sp-fg-dim);
+}
+
+.sp-menu__divider {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--sp-border);
+}
+
+/* ------------------------------------------------------------------ viewer */
+
+.sp-lock-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+.sp-viewer {
+  position: fixed;
+  inset: 0;
+  /* Fall back to the layout viewport on browsers without dvh (iOS toolbars). */
+  height: 100%;
+  height: 100dvh;
+  overscroll-behavior: none;
+  z-index: 2147483100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sp-font);
+  outline: none;
+  user-select: none;
+}
+
+.sp-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--sp-overlay);
+}
+
+.sp-viewer__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sp-viewer__stage.is-panning {
+  cursor: grabbing;
+}
+
+.sp-viewer__img {
+  display: block;
+  max-width: none;
+  max-height: none;
+  transform-origin: center center;
+  will-change: transform;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+/* Applied only while springing a rubber-banded drag back to centre. */
+.sp-viewer__img.is-settling {
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.sp-viewer.is-loading .sp-viewer__img {
+  opacity: 0.35;
+}
+
+.sp-viewer.is-error .sp-viewer__img {
+  visibility: hidden;
+}
+
+.sp-viewer__status {
+  position: absolute;
+  color: var(--sp-fg-dim);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.sp-viewer:not(.is-loading):not(.is-error) .sp-viewer__status {
+  display: none;
+}
+
+.sp-viewer__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+}
+
+.sp-viewer__counter {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  color: var(--sp-fg-dim);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-viewer__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+}
+
+.sp-viewer__nav--prev {
+  left: 16px;
+}
+.sp-viewer__nav--next {
+  right: 16px;
+}
+
+.sp-viewer__close,
+.sp-viewer__nav,
+.sp-viewer__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sp-fg);
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    opacity 0.14s ease;
+}
+
+/* These two float over the photo itself, so they always carry a scrim —
+   a bare white glyph disappears against a bright image. */
+.sp-viewer__close,
+.sp-viewer__nav {
+  background: var(--sp-btn-scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sp-viewer__close:hover,
+.sp-viewer__nav:hover:not(:disabled),
+.sp-viewer__btn:hover:not(:disabled) {
+  background: var(--sp-surface-hover);
+}
+
+.sp-viewer__nav:disabled,
+.sp-viewer__btn:disabled {
+  cursor: default;
+  opacity: 0.25;
+}
+
+.sp-viewer__toolbar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  /* Stays centred even when the button set is wider than the screen: the bar
+     itself scrolls rather than overflowing off one side. */
+  max-width: calc(100% - 24px);
+  padding: 5px 8px;
+  overflow-x: auto;
+  transform: translateX(-50%);
+  border: 1px solid var(--sp-border);
+  border-radius: 999px;
+  background: var(--sp-surface);
+  box-shadow: var(--sp-shadow);
+  scrollbar-width: none;
+}
+
+.sp-viewer__toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.sp-viewer__btn {
+  width: 36px;
+  height: 36px;
+}
+
+.sp-viewer__divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: var(--sp-border);
+}
+
+.sp-viewer__zoom {
+  min-width: 52px;
+  color: var(--sp-fg-dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------- touch */
+
+/*
+ * No hover means no way to reveal a control, so visibility is driven by state
+ * instead: a *filled* heart shows because the photo is favorited (an empty one
+ * would just be clutter on every tile), and selection circles appear once a
+ * selection exists — started by the day-header circle or a long press.
+ */
+@media (hover: none) {
+  .sp-day__check {
+    opacity: 1;
+  }
+
+  /* Hollow hearts stay hidden; only favorited photos show one. */
+  .sp-tile__fav {
+    opacity: 0;
+  }
+
+  .sp-tile__fav.is-active {
+    opacity: 1;
+  }
+
+  .sp-tile__check {
+    opacity: 0;
+  }
+
+  .sweet-album.is-selecting .sp-tile__check,
+  .sp-tile.is-selected .sp-tile__check {
+    opacity: 1;
+  }
+
+  /* The scrim only exists to back the controls — no controls, no scrim. */
+  .sp-tile__scrim {
+    opacity: 0;
+  }
+
+  .sweet-album.is-selecting .sp-tile__scrim,
+  .sp-tile.is-selected .sp-tile__scrim {
+    opacity: 1;
+  }
+
+  .sp-timeline__tick,
+  .sp-timeline__thumb {
+    opacity: 1;
+  }
+
+  .sp-menu__item {
+    padding: 11px 12px;
+  }
+
+  .sp-viewer__nav {
+    /* Swipe replaces the arrows on touch. */
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------- responsive */
+
+@media (max-width: 640px) {
+  .sweet-album {
+    font-size: 13px;
+  }
+
+  .sp-toolbar {
+    gap: 8px;
+    min-height: 48px;
+    padding: 8px 10px;
+  }
+
+  .sp-toolbar__count {
+    flex: 0 0 auto;
+    font-size: 12px;
+  }
+
+  .sp-toolbar__btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* Bulk actions collapse to icons; the clear button keeps its label. */
+  .sp-toolbar__actions .sp-toolbar__btn:has(.sp-toolbar__icon) span:last-child {
+    display: none;
+  }
+
+  .sp-toolbar__actions .sp-toolbar__btn {
+    padding: 5px 9px;
+  }
+
+  .sp-scroller {
+    padding: 6px 40px 24px 8px;
+  }
+
+  .sp-timeline {
+    width: 36px;
+  }
+
+  .sp-timeline__tick {
+    font-size: 10px;
+  }
+
+  .sp-day__label {
+    font-size: 13px;
+  }
+
+  /* Tiles are ~110px tall here — full-size controls would swamp them. */
+  .sp-tile__check {
+    top: 5px;
+    left: 5px;
+    width: 18px;
+    height: 18px;
+    border-width: 1.5px;
+  }
+
+  .sp-tile__check svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .sp-tile__fav {
+    bottom: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .sp-tile__fav svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .sp-tile__badge svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .sp-menu {
+    min-width: 180px;
+  }
+
+  .sp-viewer__close {
+    top: 10px;
+    right: 10px;
+  }
+
+  .sp-viewer__counter {
+    top: 18px;
+    left: 14px;
+    font-size: 12px;
+  }
+
+  .sp-viewer__toolbar {
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    gap: 0;
+    padding: 4px 6px;
+  }
+
+  .sp-viewer__btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sp-viewer__btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sp-viewer__divider {
+    margin: 0 3px;
+  }
+
+  .sp-viewer__zoom {
+    min-width: 42px;
+    font-size: 11px;
+  }
+}
+
+/* Very narrow phones: keep the toolbar on one line. */
+@media (max-width: 380px) {
+  .sp-viewer__zoom {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweet-album *,
+  .sp-viewer * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
