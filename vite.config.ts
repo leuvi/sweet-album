@@ -1,8 +1,39 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import dts from 'vite-plugin-dts'
 
 const r = (p: string) => resolve(__dirname, p)
+
+/**
+ * Online-demo tweaks to the shared demo HTML.
+ *
+ * They live here rather than in `demo/index.html` so the local playground —
+ * which is a three-page harness for exercising every adapter — is untouched.
+ */
+function onlineDemoHtml(): Plugin {
+  return {
+    name: 'sweet-album:online-demo-html',
+    transformIndexHtml: (html) =>
+      html
+        .replace('<title>sweet-album · vanilla</title>', '<title>sweet-album · demo</title>')
+        // Styles inline: `demo/` is not in version control, so anything this
+        // transform depends on has to travel with it.
+        .replace(
+          '</head>',
+          '  <style>\n' +
+            '      .demo-nav__note { color: #7a7a7a; font-size: 12px }\n' +
+            '      @media (max-width: 640px) { .demo-nav__note { display: none } }\n' +
+            '    </style>\n  </head>',
+        )
+        // The page switcher has nothing to switch to now, and which adapter
+        // rendered this is not something a visitor can see or act on.
+        .replace(
+          /\s*<a href="\/index\.html"[^>]*>Vanilla<\/a>\s*<a href="\/react\.html">React<\/a>\s*<a href="\/vue\.html">Vue<\/a>/,
+          '\n      <span class="demo-nav__note">vanilla JS · React · Vue</span>' +
+            '\n      <a href="https://github.com/leuvi/sweet-album" target="_blank" rel="noreferrer">GitHub</a>',
+        ),
+  }
+}
 
 /** Source aliases so the demo compiles against src, not the published package. */
 const demoAlias = [
@@ -34,6 +65,12 @@ export default defineConfig(({ command, mode }) => {
   // `vite build --mode demo` produces the deployable online demo. Photos are
   // NOT bundled — they are served from a separate host, so `demo/photos` must
   // stay out of the output (hence publicDir: false).
+  //
+  // Only the one page ships. All three adapters render the identical DOM, so
+  // React and Vue pages would look no different while dragging their runtimes
+  // — together several times the weight of the album itself — onto a visitor
+  // who cannot see what they bought. The local playground still builds all
+  // three; that is where the adapters get exercised.
   if (mode === 'demo') {
     return {
       root: r('demo'),
@@ -41,17 +78,12 @@ export default defineConfig(({ command, mode }) => {
       resolve: { alias: demoAlias },
       define: vueFlags,
       publicDir: false,
+      plugins: [onlineDemoHtml()],
       build: {
         target: 'es2020',
         outDir: r('demo-online'),
         emptyOutDir: true,
-        rollupOptions: {
-          input: {
-            index: r('demo/index.html'),
-            react: r('demo/react.html'),
-            vue: r('demo/vue.html'),
-          },
-        },
+        rollupOptions: { input: { index: r('demo/index.html') } },
       },
     }
   }
