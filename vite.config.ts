@@ -16,21 +16,17 @@ function onlineDemoHtml(): Plugin {
     transformIndexHtml: (html) =>
       html
         .replace('<title>sweet-album · vanilla</title>', '<title>sweet-album · demo</title>')
-        // Styles inline: `demo/` is not in version control, so anything this
-        // transform depends on has to travel with it.
-        .replace(
-          '</head>',
-          '  <style>\n' +
-            '      .demo-nav__note { color: #7a7a7a; font-size: 12px }\n' +
-            '      @media (max-width: 640px) { .demo-nav__note { display: none } }\n' +
-            '    </style>\n  </head>',
-        )
+        // The playground's running commentary is for whoever is developing the
+        // library, not for someone here to look at photos. Hidden rather than
+        // deleted: the demo script asserts the element exists and writes to it.
+        // Styles inline because `demo/` is not in version control, so anything
+        // this transform depends on has to travel with it.
+        .replace('</head>', '  <style>#status { display: none }</style>\n  </head>')
         // The page switcher has nothing to switch to now, and which adapter
         // rendered this is not something a visitor can see or act on.
         .replace(
           /\s*<a href="\/index\.html"[^>]*>Vanilla<\/a>\s*<a href="\/react\.html">React<\/a>\s*<a href="\/vue\.html">Vue<\/a>/,
-          '\n      <span class="demo-nav__note">vanilla JS · React · Vue</span>' +
-            '\n      <a href="https://github.com/leuvi/sweet-album" target="_blank" rel="noreferrer">GitHub</a>',
+          '\n      <a href="https://github.com/leuvi/sweet-album" target="_blank" rel="noreferrer">GitHub</a>',
         ),
   }
 }
